@@ -38,6 +38,8 @@ class SearchScreen extends SearchDelegate {
 
   @override
   Widget buildSuggestions(BuildContext context) {
+
+
     if (query.isEmpty) {
       return FutureBuilder(
         future: HomeScreenService.getTopHeadLineArticle(),

@@ -1,8 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:news/core/style/text_style.dart';
+import 'package:news/feature/cubit/newscubit_cubit.dart';
+import 'package:news/feature/cubit/newscubit_state.dart';
 import '../../../core/constants/constatant.dart';
 import '../../../core/model/top_headline_model.dart';
 import '../../../core/style/app_color.dart';
@@ -41,66 +44,66 @@ class SearchScreenResult extends StatelessWidget {
           )
         ],
       ),
-      body: FutureBuilder(
-        future: SearchScreenService.getSearchResult(title),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(color: Colors.black),
-            );
-          }
+      body: BlocBuilder<NewsCubit,NewsState>(
+          builder: (context, state) {
 
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(snapshot.error.toString()),
-            );
-          }
-
-          if (snapshot.hasData) {
-            TopHeadLinesModel topHeadLinesModel =
-                snapshot.data! as TopHeadLinesModel;
-
-            if (topHeadLinesModel.totalResults == 0) {
-              return Center(
-                child: Text("no_results".tr()),
-              );
+            if(state is NewsLoading){
+              return Center(child: CircularProgressIndicator(),);
             }
 
-            return Column(
-              children: [
-                const SizedBox(height: 16),
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    child: ListView.builder(
-                      itemCount: topHeadLinesModel.articles!.length,
-                      itemBuilder: (context, index) {
-                        Article article = topHeadLinesModel.articles![index];
-                        return InkWell(
-                          onTap: () {
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => ArticleScreen(
-                                article: article,
-                              ),
-                            ));
-                          },
-                          child: ArticleItems(
-                            article: article,
-                          ),
-                        );
-                      },
+          else if(state is NewsError){
+            return Center(child: Text("Error is : ${state.error}"),);
+            }
+
+
+          else if(state is NewsSuccessed){
+              TopHeadLinesModel topHeadLinesModel = state.topHeadLinesModel;
+
+              if (topHeadLinesModel.totalResults == 0) {
+                return Center(
+                  child: Text("no_results".tr()),
+                );
+              }
+
+              return Column(
+                children: [
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      child: ListView.builder(
+                        itemCount: topHeadLinesModel.articles!.length,
+                        itemBuilder: (context, index) {
+                          Article article = topHeadLinesModel.articles![index];
+                          return InkWell(
+                            onTap: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => ArticleScreen(
+                                  article: article,
+                                ),
+                              ));
+                            },
+                            child: ArticleItems(
+                              article: article,
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ),
-              ],
-            );
+                ],
+              );
+
+            }
+
+            else { Center(child: Text("Error no at State"),);}
+
+            return Center();
           }
 
-          return const Center(
-            child: Text("Something went wrong"),
-          );
-        },
       ),
+
+
     );
   }
 }
