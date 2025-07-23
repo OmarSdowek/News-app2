@@ -2,18 +2,21 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:news/core/model/top_headline_model.dart';
-import 'package:news/feature/cubit/newscubit_state.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/style/text_style.dart';
-import '../../cubit/newscubit_cubit.dart';
 
 class ArticleScreen extends StatelessWidget {
   final Article article;
   ArticleScreen({super.key, required this.article});
-
+  late Uri _url ;
+  Future<void> _launchUrl() async {
+    _url = Uri.parse("${article.url}");
+    if (!await launchUrl(_url)) {
+      throw Exception('Could not launch $_url');
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,9 +53,12 @@ class ArticleScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            "${article.title}",
-                            style: TextStyleApp.black19semibold,
+                          InkWell(
+                             onTap: _launchUrl,
+                            child: Text(
+                              "${article.title}",
+                              style: TextStyleApp.black19semibold.copyWith(color: Colors.blue),
+                            ),
                           ),
                           SizedBox(
                             height: 10.h,
